@@ -9,8 +9,9 @@ int main()
 {
 
     int status;
+    int socket_desc; // socket file descriptor
     struct addrinfo hints;
-    struct addrinto *servinfo; //points results
+    struct addrinfo *servinfo; //points results of addresses
 
     memset(&hints, 0, sizeof hints); // make sure the structs is empty
     hints.ai_family = AF_UNSPEC;     // does not matter if IPv4 or IPv6
@@ -24,13 +25,22 @@ int main()
     }
     else
     {
-        printf("\nServer is up!\n");
-	while(true)
-        {
-            
-           if(accept()) 
-        }
 
+        int bind_status;
+
+        socket_desc = socket(servinfo->ai_family ,servinfo->ai_socktype, servinfo->ai_protocol); //initialize socket
+        if(bind_status = bind(socket_desc,
+                              servinfo->ai_addr,
+                              servinfo->ai_addrlen) != 0 ) // binds socket to port from servinfo
+        {
+            printf("Binding error\n");
+            exit(1);
+        }
+        printf("\nServer is up!\n");
+        while(true)
+        {
+
+        }
     }
 
     printf("\nServer is down! :(\n");
