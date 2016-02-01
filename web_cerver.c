@@ -5,6 +5,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <errno.h>
+
+#define PORT_NUMBER "3490"
 
 int main()
 {
@@ -21,7 +24,7 @@ int main()
     hints.ai_socktype = SOCK_STREAM; // TCP Stream socket
     hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
 
-    if((status = getaddrinfo(NULL,"3490",&hints,&servinfo)) != 0)
+    if((status = getaddrinfo(NULL,PORT_NUMBER ,&hints,&servinfo)) != 0)
     {
         fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
         exit(EXIT_FAILURE);
@@ -55,12 +58,34 @@ int main()
         else
         {
             printf("Someone connected\n");
-            char *msg = "WELCOME TO HELL";
+            char *send_msg = "WELCOME TO HELL\n";
+
+            char *recv_msg = (char*)malloc(sizeof(char)*6000); 
             int len, bytes_sent;
-            len = strlen(msg);
+            len = strlen(send_msg);
 
+            bytes_sent = send(socket_cli,send_msg,len,0);
 
-                bytes_sent = send(socket_cli,msg,len,0);
+            while((status = recv(socket_cli,recv_msg,sizeof(char)*6000,0)) > 0)
+            {
+               send_msg = recv_msg;
+               len = strlen(send_msg);
+               send(socket_cli, send_msg, len, 0);
+               recv_msg = "x";
+            }
+
+            if(status == 0)
+            {
+                printf("Connection has been closed!\n");
+                exit(EXIT_FAILURE);
+            }
+
+            if(status == -1)
+            {
+                printf("Error on receiving message!\n");
+                printf("ERROR: %s\n", strerror(errno));
+                exit(EXIT_FAILURE);
+            }
         }
 
     }
