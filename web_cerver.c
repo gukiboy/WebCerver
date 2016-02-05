@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #define PORT_NUMBER "3490"
+#define CHUNK_SIZE 1000
 
 int main()
 {
@@ -60,37 +61,40 @@ int main()
             printf("Someone connected\n");
             char *send_msg = "WELCOME TO IX COLLECTIONS\n";
 
-            char *recv_msg = (char*)malloc(sizeof(char)*500); 
+            char *recv_msg = (char*)malloc(sizeof(char)*CHUNK_SIZE); 
             int len, bytes_sent;
             len = strlen(send_msg);
 
-            bytes_sent = send(socket_cli,send_msg,len,0);
+            bytes_sent = send(socket_cli, send_msg, len, 0);
 
-            while((status = recv(socket_cli,recv_msg,sizeof(char)*500,0)) >= 0)
+            while((status = recv(socket_cli, recv_msg, sizeof(char)*CHUNK_SIZE, 0)) >= 0)
             {
                 send_msg = recv_msg;
                 len = status;
                 send_msg[len]='\0';
                 send(socket_cli, send_msg, len, 0);
-                send(socket_cli, "RETORNO\0",7,0);
-                printf("length %d\n", len);
-                printf("status %d\n", status);
+                send(socket_cli, "RETORNO\0", 7, 0); //debugs
+                printf("length %d\n", len);          //debugs
+                printf("status %d\n", status);       //debugs
+                printf("Received ----------\n %s \n ---------- >",(char*)send_msg);
+                printf("DEBUG: %s\n", strerror(errno));//debug
+            }
 
-                if(status == 0)
-                {
-                    printf("ERROR: %s\n", strerror(errno));
-                }
+            if(status == 0)
+            {
+                printf("%s\n", strerror(errno));
             }
 
             if(status <= -1)
             {
-                 printf("Error on receiving message!\n");
-                 printf("ERROR: %s\n", strerror(errno));
-                 exit(EXIT_FAILURE);
+                printf("Error on receiving message!\n");
+                printf("ERROR: %s\n", strerror(errno));
+                exit(EXIT_FAILURE);
             }
         }
     }
 
+    printf("LAST ERROR: %s\n", strerror(errno));
     printf("\nServer is down! :(\n");
     freeaddrinfo(servinfo);
 }
